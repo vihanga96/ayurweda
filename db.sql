@@ -1,4 +1,4 @@
--- MySQL dump 10.13  Distrib 9.3.0, for macos15.4 (arm64)
+-- MySQL dump 10.13  Distrib 8.0.42, for macos15 (arm64)
 --
 -- Host: localhost    Database: ayurweda
 -- ------------------------------------------------------
@@ -7,7 +7,7 @@
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!50503 SET NAMES utf8mb4 */;
+/*!50503 SET NAMES utf8 */;
 /*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
 /*!40103 SET TIME_ZONE='+00:00' */;
 /*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
@@ -38,7 +38,7 @@ CREATE TABLE `appointments` (
   KEY `doctor_id` (`doctor_id`),
   CONSTRAINT `appointments_ibfk_1` FOREIGN KEY (`patient_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   CONSTRAINT `appointments_ibfk_2` FOREIGN KEY (`doctor_id`) REFERENCES `doctors` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -47,7 +47,7 @@ CREATE TABLE `appointments` (
 
 LOCK TABLES `appointments` WRITE;
 /*!40000 ALTER TABLE `appointments` DISABLE KEYS */;
-INSERT INTO `appointments` VALUES (1,1,3,'2025-07-23','12:00:00','in-person','cancelled','xcvfdsfg',NULL,'2025-07-17 08:12:09');
+INSERT INTO `appointments` VALUES (1,1,3,'2025-07-23','12:00:00','in-person','cancelled','xcvfdsfg',NULL,'2025-07-17 08:12:09'),(2,1,3,'2025-08-21','12:00:00','in-person','pending','fgyrtyrthdfgy',NULL,'2025-08-04 16:57:33');
 /*!40000 ALTER TABLE `appointments` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -124,6 +124,9 @@ CREATE TABLE `users` (
   `name` varchar(255) NOT NULL,
   `email` varchar(255) NOT NULL,
   `role` enum('patient','student','doctor','admin') DEFAULT 'patient',
+  `phone` varchar(20) DEFAULT NULL,
+  `address` text,
+  `profile_picture` varchar(255) DEFAULT NULL,
   `password` varchar(255) NOT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
@@ -137,7 +140,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,'test1','test1@gmail.com','patient','$2b$10$Y8gGZBTU//QWBFeO/PWhBuzEjhmSuFx.baf8Q8KMwom9a8RmrUUpi','2025-07-17 05:39:52'),(2,'admin','admin@gmail.com','admin','$2b$10$1wthB4Oc1S8eedq5fscYhuWB5uc8.Llfgpl0fL55pyhM3kuFgt.lS','2025-07-17 05:39:52'),(4,'Dr. Rajesh Kumar','dr.rajesh@ayurweda.com','doctor','$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi','2025-07-17 07:27:15'),(5,'Dr. Priya Sharma','dr.priya@ayurweda.com','doctor','$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi','2025-07-17 07:27:15'),(6,'Dr. Amit Patel','dr.amit@ayurweda.com','doctor','$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi','2025-07-17 07:27:15');
+INSERT INTO `users` VALUES (1,'test1','test1@gmail.com','patient',NULL,NULL,NULL,'$2b$10$Y8gGZBTU//QWBFeO/PWhBuzEjhmSuFx.baf8Q8KMwom9a8RmrUUpi','2025-07-17 05:39:52'),(2,'admin','admin@gmail.com','admin',NULL,NULL,NULL,'$2b$10$1wthB4Oc1S8eedq5fscYhuWB5uc8.Llfgpl0fL55pyhM3kuFgt.lS','2025-07-17 05:39:52'),(4,'Dr. Rajesh Kumar','dr.rajesh@ayurweda.com','doctor',NULL,NULL,NULL,'$2b$10$1wthB4Oc1S8eedq5fscYhuWB5uc8.Llfgpl0fL55pyhM3kuFgt.lS','2025-07-17 07:27:15'),(5,'Dr. Priya Sharma','dr.priya@ayurweda.com','doctor',NULL,NULL,NULL,'$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi','2025-07-17 07:27:15'),(6,'Dr. Amit Patel','dr.amit@ayurweda.com','doctor',NULL,NULL,NULL,'$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi','2025-07-17 07:27:15');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -150,4 +153,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-07-17 14:12:49
+-- Dump completed on 2025-08-05 13:02:43

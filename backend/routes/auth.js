@@ -269,4 +269,185 @@ router.get('/admin/users/stats', verifyAdmin, (req, res) => {
     });
 });
 
+// Middleware to verify any authenticated user token
+const verifyToken = async (req, res, next) => {
+    const token = req.header('x-auth-token');
+    
+    if (!token) {
+        return res.status(401).json({ msg: 'No token, authorization denied' });
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret');
+        req.user = decoded;
+        next();
+    } catch (err) {
+        res.status(401).json({ msg: 'Token is not valid' });
+    }
+};
+
+// Get user profile (for any authenticated user)
+router.get('/profile', verifyToken, (req, res) => {
+    const userId = req.user.id;
+    
+    const query = `
+        SELECT id, name, email, role, phone, address, profile_picture, created_at, updated_at
+        FROM users 
+        WHERE id = ?
+    `;
+    
+    db.query(query, [userId], (err, results) => {
+        if (err) {
+            console.error('Error fetching profile:', err);
+            return res.status(500).json({ msg: 'Server error' });
+        }
+        
+        if (results.length === 0) {
+            return res.status(404).json({ msg: 'User not found' });
+        }
+        
+        const user = results[0];
+        // Remove sensitive information
+        delete user.password;
+        
+        res.json({ user });
+    });
+});
+
+// Update user profile (for any authenticated user)
+router.put('/profile', verifyToken, (req, res) => {
+    const userId = req.user.id;
+    const { name, email, phone, address } = req.body;
+
+    // Validate required fields
+    if (!name || !email) {
+        return res.status(400).json({ msg: 'Name and email are required' });
+    }
+
+    // Check if email already exists for other users
+    db.query('SELECT id FROM users WHERE email = ? AND id != ?', [email, userId], (err, results) => {
+        if (err) {
+            console.error('Error checking email:', err);
+            return res.status(500).json({ msg: 'Server error' });
+        }
+        if (results.length > 0) {
+            return res.status(400).json({ msg: 'Email already exists' });
+        }
+
+        // Update user profile
+        const updateData = {
+            name,
+            email,
+            phone: phone || null,
+            address: address || null,
+            updated_at: new Date()
+        };
+
+        db.query('UPDATE users SET ? WHERE id = ?', [updateData, userId], (err, result) => {
+            if (err) {
+                console.error('Error updating profile:', err);
+                return res.status(500).json({ msg: 'Server error' });
+            }
+            if (result.affectedRows === 0) {
+                return res.status(404).json({ msg: 'User not found' });
+            }
+            res.json({ msg: 'Profile updated successfully' });
+        });
+    });
+});
+
+// Change password (for any authenticated user)
+router.put('/change-password', verifyToken, (req, res) => {
+    const userId = req.user.id;
+    const { currentPassword, newPassword } = req.body;
+
+    // Validate input
+    if (!currentPassword || !newPassword) {
+        return res.status(400).json({ msg: 'Current password and new password are required' });
+    }
+
+    if (newPassword.length < 6) {
+        return res.status(400).json({ msg: 'New password must be at least 6 characters long' });
+    }
+
+    // Get current user to verify current password
+    db.query('SELECT password FROM users WHERE id = ?', [userId], async (err, results) => {
+        if (err) {
+            console.error('Error fetching user:', err);
+            return res.status(500).json({ msg: 'Server error' });
+        }
+        
+        if (results.length === 0) {
+            return res.status(404).json({ msg: 'User not found' });
+        }
+
+        // Verify current password
+        const isMatch = await bcrypt.compare(currentPassword, results[0].password);
+        if (!isMatch) {
+            return res.status(400).json({ msg: 'Current password is incorrect' });
+        }
+
+        // Hash new password
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+        // Update password
+        db.query('UPDATE users SET password = ?, updated_at = ? WHERE id = ?', 
+            [hashedPassword, new Date(), userId], (err, result) => {
+            if (err) {
+                console.error('Error updating password:', err);
+                return res.status(500).json({ msg: 'Server error' });
+            }
+            res.json({ msg: 'Password changed successfully' });
+        });
+    });
+});
+
+// Upload profile picture (for any authenticated user)
+router.put('/profile-picture', verifyToken, (req, res) => {
+    const userId = req.user.id;
+    const { profilePicture } = req.body;
+
+    if (!profilePicture) {
+        return res.status(400).json({ msg: 'Profile picture URL is required' });
+    }
+
+    // Update profile picture
+    db.query('UPDATE users SET profile_picture = ?, updated_at = ? WHERE id = ?', 
+        [profilePicture, new Date(), userId], (err, result) => {
+        if (err) {
+            console.error('Error updating profile picture:', err);
+            return res.status(500).json({ msg: 'Server error' });
+        }
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ msg: 'User not found' });
+        }
+        res.json({ msg: 'Profile picture updated successfully' });
+    });
+});
+
+// Get user preferences (for any authenticated user)
+router.get('/preferences', verifyToken, (req, res) => {
+    const userId = req.user.id;
+    
+    // For now, return basic preferences. This can be expanded later
+    const preferences = {
+        notifications: true,
+        emailUpdates: true,
+        theme: 'light'
+    };
+    
+    res.json({ preferences });
+});
+
+// Update user preferences (for any authenticated user)
+router.put('/preferences', verifyToken, (req, res) => {
+    const userId = req.user.id;
+    const { notifications, emailUpdates, theme } = req.body;
+
+    // For now, just acknowledge the request. This can be expanded later
+    // when we add a preferences table to the database
+    res.json({ msg: 'Preferences updated successfully' });
+});
+
 module.exports = router; 

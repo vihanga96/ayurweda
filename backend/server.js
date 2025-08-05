@@ -15,6 +15,8 @@ app.use(express.urlencoded({ extended: true }));
 console.log('Registering routes...');
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/appointments', require('./routes/appointments'));
+app.use('/api/doctors', require('./routes/doctors'));
+app.use('/api/medicine', require('./routes/medicine'));
 
 app.get('/', (req, res) => {
     console.log('Root endpoint hit');
