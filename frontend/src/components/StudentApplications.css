@@ -1,0 +1,362 @@
+.student-applications {
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+}
+
+.applications-header {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    padding: 25px;
+    margin-bottom: 30px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.back-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    font-size: 14px;
+    justify-content: center;
+    white-space: nowrap;
+    min-width: fit-content;
+}
+
+.back-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+
+.header-title {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.header-title h1 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #2c3e50;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.applications-count {
+    color: #6c757d;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.browse-courses-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+}
+
+.browse-courses-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+}
+
+.applications-content {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.applications-grid {
+    display: grid;
+    gap: 25px;
+}
+
+.application-card {
+    background: white;
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+    border: 2px solid #f8f9fa;
+    transition: all 0.3s ease;
+}
+
+.application-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+    border-color: rgba(102, 126, 234, 0.3);
+}
+
+.application-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+
+.course-info h3 {
+    margin: 0 0 8px 0;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+.course-description {
+    margin: 0;
+    color: #6c757d;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.status-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    color: white;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    white-space: nowrap;
+    min-width: fit-content;
+}
+
+.application-details {
+    border-top: 1px solid #e9ecef;
+    padding-top: 20px;
+}
+
+.detail-row {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 20px;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #495057;
+}
+
+.detail-item svg {
+    color: #667eea;
+    font-size: 1.1rem;
+}
+
+.detail-item div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.detail-item strong {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.detail-item span {
+    font-size: 14px;
+    font-weight: 500;
+    color: #2c3e50;
+}
+
+.personal-statement, .admin-notes {
+    margin-top: 20px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border-left: 4px solid #667eea;
+}
+
+.personal-statement h4, .admin-notes h4 {
+    margin: 0 0 10px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #495057;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.personal-statement p, .admin-notes p {
+    margin: 0;
+    color: #6c757d;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.admin-notes {
+    border-left-color: #28a745;
+}
+
+.no-applications {
+    text-align: center;
+    padding: 60px 20px;
+    color: #6c757d;
+}
+
+.no-applications svg {
+    font-size: 4rem;
+    color: #667eea;
+    margin-bottom: 20px;
+}
+
+.no-applications h3 {
+    margin: 0 0 15px 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+.no-applications p {
+    margin: 0 0 30px 0;
+    font-size: 16px;
+    line-height: 1.6;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.cta-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 16px;
+    text-decoration: none;
+}
+
+.cta-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+}
+
+.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-size: 1.5rem;
+    color: white;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .student-applications {
+        padding: 15px;
+    }
+
+    .applications-header {
+        padding: 20px;
+        flex-direction: column;
+        gap: 20px;
+        text-align: center;
+    }
+
+    .header-left {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+
+    .browse-courses-btn {
+        width: 36px;
+        height: 36px;
+        padding: 8px;
+        font-size: 12px;
+    }
+
+    .header-title h1 {
+        font-size: 1.5rem;
+        justify-content: center;
+    }
+
+    .applications-content {
+        padding: 20px;
+    }
+
+    .application-header {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .detail-row {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .no-applications {
+        padding: 40px 15px;
+    }
+
+    .no-applications svg {
+        font-size: 3rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .student-applications {
+        padding: 10px;
+    }
+
+    .applications-header {
+        padding: 15px;
+    }
+
+    .applications-content {
+        padding: 15px;
+    }
+
+    .application-card {
+        padding: 20px;
+    }
+
+    .header-title h1 {
+        font-size: 1.3rem;
+    }
+}
