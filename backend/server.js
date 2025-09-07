@@ -17,6 +17,9 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/appointments', require('./routes/appointments'));
 app.use('/api/doctors', require('./routes/doctors'));
 app.use('/api/medicine', require('./routes/medicine'));
+app.use('/api/students', require('./routes/students'));
+app.use('/api/admin', require('./routes/admin'));
+app.use('/api/messages', require('./routes/messages'));
 
 app.get('/', (req, res) => {
     console.log('Root endpoint hit');

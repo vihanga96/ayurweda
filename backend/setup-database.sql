@@ -77,37 +77,59 @@ CREATE TABLE IF NOT EXISTS consultation_notes (
     FOREIGN KEY (appointment_id) REFERENCES appointments(id) ON DELETE CASCADE
 );
 
+-- Medicine Categories Table
+CREATE TABLE IF NOT EXISTS medicine_categories (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    image_url VARCHAR(255),
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
 -- Medicine inventory table
 CREATE TABLE IF NOT EXISTS medicines (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     description TEXT,
-    category VARCHAR(100),
+    category_id INT,
     price DECIMAL(10,2) NOT NULL,
     stock_quantity INT NOT NULL DEFAULT 0,
-    unit VARCHAR(50),
+    unit VARCHAR(50) NOT NULL DEFAULT 'unit',
+    dosage_form VARCHAR(100), -- tablet, syrup, powder, etc.
+    active_ingredients TEXT,
+    therapeutic_effects TEXT,
+    contraindications TEXT,
+    side_effects TEXT,
+    storage_instructions TEXT,
+    expiry_date DATE,
     manufacturer VARCHAR(255),
-    is_available BOOLEAN DEFAULT TRUE,
+    is_prescription_required BOOLEAN DEFAULT FALSE,
+    is_active BOOLEAN DEFAULT TRUE,
     image_url VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (category_id) REFERENCES medicine_categories(id) ON DELETE SET NULL
 );
 
 -- Orders table
 CREATE TABLE IF NOT EXISTS orders (
     id INT AUTO_INCREMENT PRIMARY KEY,
     patient_id INT NOT NULL,
+    order_number VARCHAR(50) UNIQUE NOT NULL,
+    order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status ENUM('pending', 'confirmed', 'processing', 'ready', 'delivered', 'cancelled') DEFAULT 'pending',
     total_amount DECIMAL(10,2) NOT NULL,
-    status ENUM('pending', 'confirmed', 'shipped', 'delivered', 'cancelled') DEFAULT 'pending',
-    shipping_address TEXT,
-    payment_status ENUM('pending', 'paid', 'failed') DEFAULT 'pending',
-    payment_method VARCHAR(50),
+    delivery_address TEXT,
+    delivery_instructions TEXT,
+    notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (patient_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- Order items table
+-- Order Items Table
 CREATE TABLE IF NOT EXISTS order_items (
     id INT AUTO_INCREMENT PRIMARY KEY,
     order_id INT NOT NULL,
@@ -115,9 +137,30 @@ CREATE TABLE IF NOT EXISTS order_items (
     quantity INT NOT NULL,
     unit_price DECIMAL(10,2) NOT NULL,
     total_price DECIMAL(10,2) NOT NULL,
+    prescription_required BOOLEAN DEFAULT FALSE,
+    prescription_uploaded BOOLEAN DEFAULT FALSE,
+    prescription_url VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
     FOREIGN KEY (medicine_id) REFERENCES medicines(id) ON DELETE CASCADE
+);
+
+-- Prescriptions Table
+CREATE TABLE IF NOT EXISTS prescriptions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    patient_id INT NOT NULL,
+    doctor_id INT,
+    prescription_date DATE NOT NULL,
+    diagnosis TEXT,
+    medicines_prescribed TEXT,
+    dosage_instructions TEXT,
+    duration VARCHAR(100),
+    notes TEXT,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (patient_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (doctor_id) REFERENCES doctors(user_id) ON DELETE SET NULL
 );
 
 -- Messages table
@@ -136,16 +179,44 @@ CREATE TABLE IF NOT EXISTS messages (
 CREATE TABLE IF NOT EXISTS medical_records (
     id INT AUTO_INCREMENT PRIMARY KEY,
     patient_id INT NOT NULL,
-    record_type ENUM('allergy', 'condition', 'medication', 'procedure', 'test') NOT NULL,
-    title VARCHAR(255) NOT NULL,
-    description TEXT,
-    date_recorded DATE NOT NULL,
+    record_type ENUM('consultation', 'prescription', 'lab_result', 'imaging', 'other') NOT NULL,
+    record_date DATE NOT NULL,
     doctor_id INT,
-    file_url VARCHAR(255),
+    diagnosis TEXT,
+    treatment TEXT,
+    notes TEXT,
+    attachments TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (patient_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (doctor_id) REFERENCES doctors(id) ON DELETE SET NULL
+    FOREIGN KEY (doctor_id) REFERENCES doctors(user_id) ON DELETE SET NULL
+);
+
+-- Student applications table
+CREATE TABLE IF NOT EXISTS student_applications (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT NOT NULL,
+    course_id INT,
+    application_date DATE NOT NULL,
+    status ENUM('pending', 'approved', 'rejected', 'waitlisted') DEFAULT 'pending',
+    documents_submitted TEXT,
+    notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Courses table
+CREATE TABLE IF NOT EXISTS courses (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    duration VARCHAR(100),
+    fee DECIMAL(10,2),
+    max_students INT,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 -- Create indexes for better performance
@@ -159,66 +230,33 @@ CREATE INDEX idx_appointments_date ON appointments(appointment_date);
 CREATE INDEX idx_appointments_status ON appointments(status);
 CREATE INDEX idx_doctor_schedules_doctor_id ON doctor_schedules(doctor_id);
 CREATE INDEX idx_doctor_schedules_day ON doctor_schedules(day_of_week);
-CREATE INDEX idx_medicines_category ON medicines(category);
-CREATE INDEX idx_medicines_available ON medicines(is_available);
+CREATE INDEX idx_medicines_category ON medicines(category_id);
+CREATE INDEX idx_medicines_active ON medicines(is_active);
 CREATE INDEX idx_orders_patient_id ON orders(patient_id);
 CREATE INDEX idx_orders_status ON orders(status);
+CREATE INDEX idx_order_items_order ON order_items(order_id);
+CREATE INDEX idx_order_items_medicine ON order_items(medicine_id);
+CREATE INDEX idx_prescriptions_patient ON prescriptions(patient_id);
+CREATE INDEX idx_prescriptions_doctor ON prescriptions(doctor_id);
 CREATE INDEX idx_messages_sender ON messages(sender_id);
 CREATE INDEX idx_messages_receiver ON messages(receiver_id);
 CREATE INDEX idx_medical_records_patient ON medical_records(patient_id);
+CREATE INDEX idx_student_applications_student ON student_applications(student_id);
+CREATE INDEX idx_courses_active ON courses(is_active);
 
--- Insert sample data
+-- Insert sample medicine categories
+INSERT IGNORE INTO medicine_categories (id, name, description) VALUES
+(1, 'Herbal Medicines', 'Traditional herbal remedies and formulations'),
+(2, 'Ayurvedic Supplements', 'Dietary supplements based on Ayurvedic principles'),
+(3, 'Medicated Oils', 'Therapeutic oils for external application'),
+(4, 'Powders and Pastes', 'Medicinal powders and paste formulations'),
+(5, 'Tablets and Capsules', 'Modern dosage forms of Ayurvedic medicines'),
+(6, 'Syrups and Tonics', 'Liquid formulations for internal use');
 
--- Admin users
-INSERT INTO users (name, email, password, role) VALUES
-('System Administrator', 'admin@ayurweda.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin'),
-('Ayurweda Manager', 'manager@ayurweda.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin')
-ON DUPLICATE KEY UPDATE name = VALUES(name);
-
--- Sample doctors
-INSERT INTO users (name, email, password, role, phone) VALUES
-('Dr. Rajesh Kumar', 'dr.rajesh@ayurweda.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'doctor', '+94 11 234 5678'),
-('Dr. Priya Sharma', 'dr.priya@ayurweda.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'doctor', '+94 11 234 5679'),
-('Dr. Amit Patel', 'dr.amit@ayurweda.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'doctor', '+94 11 234 5680')
-ON DUPLICATE KEY UPDATE name = VALUES(name);
-
--- Insert doctor records
-INSERT INTO doctors (user_id, specialization, experience_years, consultation_fee, bio) VALUES
-((SELECT id FROM users WHERE email = 'dr.rajesh@ayurweda.com'), 'Ayurvedic Medicine', 15, 2500, 'Specialized in traditional Ayurvedic treatments with 15 years of experience'),
-((SELECT id FROM users WHERE email = 'dr.priya@ayurweda.com'), 'Panchakarma Therapy', 12, 3500, 'Expert in Panchakarma detoxification and rejuvenation therapies'),
-((SELECT id FROM users WHERE email = 'dr.amit@ayurweda.com'), 'Herbal Medicine', 10, 2000, 'Specialized in herbal formulations and natural remedies')
-ON DUPLICATE KEY UPDATE specialization = VALUES(specialization);
-
--- Insert sample schedules
-INSERT INTO doctor_schedules (doctor_id, day_of_week, start_time, end_time) VALUES
-((SELECT id FROM doctors WHERE user_id = (SELECT id FROM users WHERE email = 'dr.rajesh@ayurweda.com')), 'monday', '09:00', '17:00'),
-((SELECT id FROM doctors WHERE user_id = (SELECT id FROM users WHERE email = 'dr.rajesh@ayurweda.com')), 'tuesday', '09:00', '17:00'),
-((SELECT id FROM doctors WHERE user_id = (SELECT id FROM users WHERE email = 'dr.rajesh@ayurweda.com')), 'wednesday', '09:00', '17:00'),
-((SELECT id FROM doctors WHERE user_id = (SELECT id FROM users WHERE email = 'dr.rajesh@ayurweda.com')), 'thursday', '09:00', '17:00'),
-((SELECT id FROM doctors WHERE user_id = (SELECT id FROM users WHERE email = 'dr.rajesh@ayurweda.com')), 'friday', '09:00', '17:00'),
-((SELECT id FROM doctors WHERE user_id = (SELECT id FROM users WHERE email = 'dr.priya@ayurweda.com')), 'monday', '10:00', '18:00'),
-((SELECT id FROM doctors WHERE user_id = (SELECT id FROM users WHERE email = 'dr.priya@ayurweda.com')), 'tuesday', '10:00', '18:00'),
-((SELECT id FROM doctors WHERE user_id = (SELECT id FROM users WHERE email = 'dr.priya@ayurweda.com')), 'wednesday', '10:00', '18:00'),
-((SELECT id FROM doctors WHERE user_id = (SELECT id FROM users WHERE email = 'dr.priya@ayurweda.com')), 'thursday', '10:00', '18:00'),
-((SELECT id FROM doctors WHERE user_id = (SELECT id FROM users WHERE email = 'dr.priya@ayurweda.com')), 'friday', '10:00', '18:00'),
-((SELECT id FROM doctors WHERE user_id = (SELECT id FROM users WHERE email = 'dr.priya@ayurweda.com')), 'saturday', '10:00', '18:00'),
-((SELECT id FROM doctors WHERE user_id = (SELECT id FROM users WHERE email = 'dr.amit@ayurweda.com')), 'tuesday', '08:00', '16:00'),
-((SELECT id FROM doctors WHERE user_id = (SELECT id FROM users WHERE email = 'dr.amit@ayurweda.com')), 'wednesday', '08:00', '16:00'),
-((SELECT id FROM doctors WHERE user_id = (SELECT id FROM users WHERE email = 'dr.amit@ayurweda.com')), 'thursday', '08:00', '16:00'),
-((SELECT id FROM doctors WHERE user_id = (SELECT id FROM users WHERE email = 'dr.amit@ayurweda.com')), 'friday', '08:00', '16:00'),
-((SELECT id FROM doctors WHERE user_id = (SELECT id FROM users WHERE email = 'dr.amit@ayurweda.com')), 'saturday', '08:00', '16:00')
-ON DUPLICATE KEY UPDATE start_time = VALUES(start_time), end_time = VALUES(end_time);
-
--- Sample medicines
-INSERT INTO medicines (name, description, category, price, stock_quantity, unit, manufacturer) VALUES
-('Ashwagandha Powder', 'Traditional herb for stress relief and energy', 'Herbs', 1500.00, 100, '100g', 'Ayurweda Herbs'),
-('Triphala Churna', 'Digestive health and detoxification', 'Digestive', 800.00, 150, '200g', 'Ayurweda Herbs'),
-('Brahmi Capsules', 'Memory enhancement and brain health', 'Brain Health', 1200.00, 80, '60 capsules', 'Ayurweda Herbs'),
-('Neem Oil', 'Skin care and purification', 'Skin Care', 950.00, 120, '100ml', 'Ayurweda Herbs'),
-('Sesame Oil', 'Traditional massage and therapy oil', 'Oils', 750.00, 200, '250ml', 'Ayurweda Herbs'),
-('Ginger Tea', 'Digestive and immunity support', 'Teas', 450.00, 300, '50 bags', 'Ayurweda Herbs'),
-('Turmeric Powder', 'Anti-inflammatory and immunity booster', 'Immunity', 650.00, 180, '100g', 'Ayurweda Herbs'),
-('Amla Juice', 'Vitamin C rich immunity booster', 'Juices', 1200.00, 90, '500ml', 'Ayurweda Herbs')
-ON DUPLICATE KEY UPDATE stock_quantity = VALUES(stock_quantity);
-
-SELECT 'Database setup completed successfully!' as message; 
+-- Insert sample medicines
+INSERT IGNORE INTO medicines (id, name, description, category_id, price, stock_quantity, unit, dosage_form, manufacturer) VALUES
+(1, 'Ashwagandha Tablets', 'Traditional herb for stress and vitality', 5, 25.00, 100, 'tablet', 'tablet', 'AyurPharma'),
+(2, 'Turmeric Powder', 'Anti-inflammatory and antioxidant properties', 4, 15.00, 50, 'gram', 'powder', 'HerbalCare'),
+(3, 'Sesame Oil', 'Base oil for therapeutic applications', 3, 30.00, 25, 'bottle', 'oil', 'PureOils'),
+(4, 'Tulsi Tea', 'Immunity boosting herbal tea', 1, 20.00, 75, 'packet', 'tea', 'TeaGarden'),
+(5, 'Ginger Capsules', 'Digestive health support', 2, 18.00, 60, 'capsule', 'capsule', 'HealthPlus'); 
